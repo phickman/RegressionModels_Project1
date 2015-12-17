@@ -10,6 +10,10 @@ You work for Motor Trend, a magazine about the automobile industry. Looking at a
 
 ***"Quantify the MPG difference between automatic and manual transmissions"***
 
+*	"Data supports the claim that if Kobe stops ball hogging the Lakers will win more"
+*	"Linear regression suggests that an increase of 1% in % of shots taken by Kobe results in a drop of 1.16 points (+/- 0.22) in score differential."
+
+
 ## Question
 
 Take the mtcars data set and write up an analysis to answer their question using regression models and exploratory data analyses.
