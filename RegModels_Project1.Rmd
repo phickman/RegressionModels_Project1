@@ -1,9 +1,11 @@
 # Executive Summary
 
-***"Is an automatic or manual transmission better for MPG"***
-***"Quantify the MPG difference between automatic and manual transmissions"***
+Motor Trend, a magazine about the automobile industry, has looked at a data set of a collection of cars to explore the relationship between a set of variables and miles per gallon (MPG). They are particularly interested in the following two questions:
 
-Motor Trend has analysed automobile industry data and has identified data that supports/rejects the generally held belief that manual cars are provide more miles per gallon (mpg).  The analysis indicated that manual transmissions deliver ????? more mpg's than automatic.
+* "Is an automatic or manual transmission better for MPG"
+* "Quantify the MPG difference between automatic and manual transmissions"
+
+The analysis identified data that supports/rejects the generally held belief that manual cars are provide more miles per gallon (mpg).  The analysis indicated that manual transmissions deliver ????? more mpg's than automatic.
 
 ***some lines from others***
 *	"Data supports the claim that if Kobe stops ball hogging the Lakers will win more"
@@ -22,37 +24,139 @@ Motor Trend has analysed automobile industry data and has identified data that s
 The data was extracted from the 1974 Motor Trends magazine and comprises fuel consumption and 10 aspects of automobile design and performance for 32 automobiles (1973-74 models).
 
 The variables of the dataset are:
-* mpg   Miles/(US) gallon
-* cyl	Number of cylinders
-* disp	Displacement (cu.in.)
-* hp	Gross horsepower
-* drat	Rear axle ratio
-* wt	Weight (1000 lbs)
-* qsec	1/4 mile time
-* vs	V/S
-* am	Transmission (0 = automatic, 1 = manual)
-* gear	Number of forward gears
-* carb	Number of carburetors
+* 'mpg'   Miles/(US) gallon
+* 'cyl'	Number of cylinders
+* 'disp'	Displacement (cu.in.)
+* 'hp'	Gross horsepower
+* 'drat'	Rear axle ratio
+* 'wt'	Weight (1000 lbs)
+* 'qsec'	1/4 mile time
+* 'vs'	V/S
+* 'am'	Transmission (0 = automatic, 1 = manual)
+* 'gear'	Number of forward gears
+* 'carb'	Number of carburetors
 
-```{r echo=FALSE}
-library(UsingR)
-data(mtcars)
-```
-
+Load the data and libraries to process.
 ```{r}
-names(mtcars)
-summary(mtcars)
-str(mtcars)
-
-# am is a factor variable
-mtcars$am = as.factor(ifelse(mtcars$am==1, "Automatic", "Manual"))
+library(UsingR); data(mtcars)
+library(ggplot2)
 ```
 
 # Exploratory data analysis
 
-Do some exploratory data anlysis
+An understanding of the `am` variable means it should be a factor variable indicating the transmission type.
 
-## Some appendix graphs?
+```{r}
+# am is a factor variable
+mtcars$am = as.factor(ifelse(mtcars$am==1, "Automatic", "Manual"))
+```
+
+The plots for the exploratory data analysis can be found in the appendix.
+
+Figure 1 is a boxplot of the comparison of the mpg between manual and automatic transmission, showing that over manual has higher mpg than automatic.
+
+```{r}
+boxplot(mpg ~ am, data = mtcars, main = "Transmission Type", ylab = "MPG")
+```
+
+Figure 2 shows the relationship between the variable in the dataset.  This assists with selection of model variables.
+
+```{r}
+# correlation??? first line is correlation with mpg
+# sort by correlation value
+sort(cor(mtcars)[1,])
+# is the correlation valid?
+```
+
+# Model selection
+
+```{r}
+```
+
+The strategy for model selection is....
+
+Compare models...
+
+```{r}
+#what could influence mpg?
+# cyl, hp, wt, am, gear, carb
+
+fit0 <- lm(mpg ~ factor(am), data = mtcars)
+fit1 <- lm(mpg ~ factor(am) + wt, data = mtcars)
+fit2 <- lm(mpg ~ factor(am) + wt + hp, data = mtcars)
+fit3 <- lm(mpg ~ wt + hp, data = mtcars)
+fit4 <- lm(mpg ~ ., data = mtcars)
+anova(fit0, fit1, fit2)
+anova(fit2,fit3) #wt and hp have more significant impact
+anova(fit0, fit4)
+
+#r squared - percentage of variance explained by the model
+
+fitstep <- step(fit4, trace=0)
+summary(fitstep)
+```
+
+T tests???? do they need to be normally distributed?
+
+* Residual plot and some diagnostics?
+Residual plots highlight poor model fit
+
+```{r}
+par(mfrow=c(2,2))
+plot(fit)
+```
+
+```{r}
+library(car)
+vif(fit4)
+```
+
+The coefficients indicate .....
+
+
+## Confidence and prediction intervals
+Did the student quantify the uncertainty in their conclusions and/or perform an inference correctly?
+
+```{r}
+library(ggplot2)
+newx = data.frame(x = seq(min(x), max(x), length = 100))
+p1 = data.frame(predict(fit, newdata= newx,interval = ("confidence")))
+p2 = data.frame(predict(fit, newdata = newx,interval = ("prediction")))
+p1$interval = "confidence"
+p2$interval = "prediction"
+p1$x = newx$x
+p2$x = newx$x
+dat = rbind(p1, p2)
+names(dat)[1] = "y"
+g = ggplot(dat, aes(x = x, y = y))
+g = g + geom_ribbon(aes(ymin = lwr, ymax = upr, fill = interval), alpha = 0.2)
+g = g + geom_line()
+g = g + geom_point(data = data.frame(x = x, y=y), aes(x = x, y = y), size = 4)
+g
+```
+
+## Question
+
+Take the mtcars data set and write up an analysis to answer their question using regression models and exploratory data analyses.
+
+Your report must be:
+
+* Written as a PDF printout of a compiled (using knitr) R markdown document.
+* Brief. Roughly the equivalent of 2 pages or less for the main text. Supporting figures in an appendix can be included up to 5 total pages including the 2 for the main report. The appendix can only include figures.
+
+Peer Grading
+
+* Did the student interpret the coefficients correctly?
+* Did the student do some exploratory data analyses?
+* Did the student fit multiple models and detail their strategy for model selection?
+* Did the student answer the questions of interest or detail why the question(s) is (are) not answerable?
+* Did the student do a residual plot and some diagnostics?
+* Did the student quantify the uncertainty in their conclusions and/or perform an inference correctly?
+* Was the report brief (about 2 pages long) for the main body of the report and no longer than 5 with supporting appendix of figures?
+* Did the report include an executive summary?
+* Was the report done in Rmd (knitr)?
+
+## Other stuff
 
 ```{r}
 fit = lm(mpg ~ am, data = mtcars)
@@ -92,12 +196,7 @@ dta.col <- dmat.color(dta.r) # get colors
 dta.o <- order.single(dta.r)
 cpairs(dta, dta.o, panel.colors=dta.col, gap=.5,       
        main="Variables Ordered and Colored by Correlation" )
-```
 
-* Residual plot and some diagnostics?
-Residual plots highlight poor model fit
-
-```{r}
 fit <- lm(mpg ~ hp, data = mtcars)
 temp <- mtcars
 temp$resid <- resid(fit)
@@ -114,86 +213,4 @@ plot(fit)
 plot(fitted(fit), residuals(fit), xlab = "Fitted Values", ylab = "Residuals")
 abline(h=0, lty=2)
 lines(smooth.spline(fitted(fit), residuals(fit)))
-
-# correlation??? first line is correlation with mpg
-# sort by correlation value
-sort(cor(mtcars)[1,])
-# is the correlation valid?
 ```
-
-Model selection
-
-The strategy for model selection is....
-
-Compare models...
-
-T tests???? do they need to be normally distributed?
-
-```{r}
-#what could influence mpg?
-# cyl, hp, wt, am, gear, carb
-
-fit0 <- lm(mpg ~ factor(am), data = mtcars)
-fit1 <- lm(mpg ~ factor(am) + wt, data = mtcars)
-fit2 <- lm(mpg ~ factor(am) + wt + hp, data = mtcars)
-fit3 <- lm(mpg ~ wt + hp, data = mtcars)
-fit4 <- lm(mpg ~ ., data = mtcars)
-anova(fit0, fit1, fit2)
-anova(fit2,fit3) #wt and hp have more significant impact
-anova(fit0, fit4)
-
-#r squared - percentage of variance explained by the model
-
-fitstep <- step(fit4, trace=0)
-summary(fitstep)
-```
-
-The coefficients indicate .....
-
-```{r}
-library(car)
-vif(fit4)
-```
-
-## Confidence and prediction intervals
-Did the student quantify the uncertainty in their conclusions and/or perform an inference correctly?
-
-```{r}
-library(ggplot2)
-newx = data.frame(x = seq(min(x), max(x), length = 100))
-p1 = data.frame(predict(fit, newdata= newx,interval = ("confidence")))
-p2 = data.frame(predict(fit, newdata = newx,interval = ("prediction")))
-p1$interval = "confidence"
-p2$interval = "prediction"
-p1$x = newx$x
-p2$x = newx$x
-dat = rbind(p1, p2)
-names(dat)[1] = "y"
-g = ggplot(dat, aes(x = x, y = y))
-g = g + geom_ribbon(aes(ymin = lwr, ymax = upr, fill = interval), alpha = 0.2)
-g = g + geom_line()
-g = g + geom_point(data = data.frame(x = x, y=y), aes(x = x, y = y), size = 4)
-g
-```
-
-
-## Question
-
-Take the mtcars data set and write up an analysis to answer their question using regression models and exploratory data analyses.
-
-Your report must be:
-
-* Written as a PDF printout of a compiled (using knitr) R markdown document.
-* Brief. Roughly the equivalent of 2 pages or less for the main text. Supporting figures in an appendix can be included up to 5 total pages including the 2 for the main report. The appendix can only include figures.
-
-Peer Grading
-
-* Did the student interpret the coefficients correctly?
-* Did the student do some exploratory data analyses?
-* Did the student fit multiple models and detail their strategy for model selection?
-* Did the student answer the questions of interest or detail why the question(s) is (are) not answerable?
-* Did the student do a residual plot and some diagnostics?
-* Did the student quantify the uncertainty in their conclusions and/or perform an inference correctly?
-* Was the report brief (about 2 pages long) for the main body of the report and no longer than 5 with supporting appendix of figures?
-* Did the report include an executive summary?
-* Was the report done in Rmd (knitr)?
