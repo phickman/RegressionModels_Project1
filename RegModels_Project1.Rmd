@@ -1,54 +1,59 @@
-# Executive Summary
+---
+output:
+  html_document:
+    keep_md: no
+---
+# Introduction
 
-Motor Trend, a magazine about the automobile industry, has looked at a data set of a collection of cars to explore the relationship between a set of variables and miles per gallon (MPG). They are particularly interested in the following two questions:
+Motor Trend, a magazine about the automobile industry, has looked at a data set of a collection of cars to explore the relationship between a set of variables and miles per gallon (MPG). The magazine is particularly interested in the following two questions:
 
 * "Is an automatic or manual transmission better for MPG"
 * "Quantify the MPG difference between automatic and manual transmissions"
 
+
+# Executive Summary
+
 The analysis identified data that supports/rejects the generally held belief that manual cars are provide more miles per gallon (mpg).  The analysis indicated that manual transmissions deliver ????? more mpg's than automatic.
 
 ***some lines from others***
+
 *	"Data supports the claim that if Kobe stops ball hogging the Lakers will win more"
 *	"Linear regression suggests that an increase of 1% in % of shots taken by Kobe results in a drop of 1.16 points (+/- 0.22) in score differential."
 
-# What is the approach?
-1. Get the data
-2. What is the data - explore, simple plots
-3. Select variables to include in the model (which explain the data best - correlation???)
-4. Model selection - compare some models(???)
-5. Why selected model
-6. What does it say about the impact of auto/manual on mpg?
 
 # The data
 
 The data was extracted from the 1974 Motor Trends magazine and comprises fuel consumption and 10 aspects of automobile design and performance for 32 automobiles (1973-74 models).
 
 The variables of the dataset are:
-* 'mpg'   Miles/(US) gallon
-* 'cyl'	Number of cylinders
-* 'disp'	Displacement (cu.in.)
-* 'hp'	Gross horsepower
-* 'drat'	Rear axle ratio
-* 'wt'	Weight (1000 lbs)
-* 'qsec'	1/4 mile time
-* 'vs'	V/S
-* 'am'	Transmission (0 = automatic, 1 = manual)
-* 'gear'	Number of forward gears
-* 'carb'	Number of carburetors
+
+* `mpg`   Miles/(US) gallon
+* `cyl`	  Number of cylinders
+* `disp`	Displacement (cu.in.)
+* `hp`	  Gross horsepower
+* `drat`	Rear axle ratio
+* `wt`	  Weight (1000 lbs)
+* `qsec`	1/4 mile time
+* `vs`	  V/S
+* `am`	  Transmission (0 = automatic, 1 = manual)
+* `gear`	Number of forward gears
+* `carb`	Number of carburetors
 
 Load the data and libraries to process.
-```{r}
+
+```{r, echo=FALSE}
 library(UsingR); data(mtcars)
 library(ggplot2)
 ```
+
 
 # Exploratory data analysis
 
 An understanding of the `am` variable means it should be a factor variable indicating the transmission type.
 
 ```{r}
-# am is a factor variable
-mtcars$am = as.factor(ifelse(mtcars$am==1, "Automatic", "Manual"))
+# am is a factor variable (0 = automatic, 1 = manual)
+mtcars$am = as.factor(ifelse(mtcars$am==0, "Automatic", "Manual"))
 ```
 
 The plots for the exploratory data analysis can be found in the appendix.
@@ -56,13 +61,13 @@ The plots for the exploratory data analysis can be found in the appendix.
 Figure 1 is a boxplot of the comparison of the mpg between manual and automatic transmission, showing that over manual has higher mpg than automatic.
 
 ```{r}
-boxplot(mpg ~ am, data = mtcars, main = "Transmission Type", ylab = "MPG")
+boxplot(mpg ~ am, data = mtcars, main = "Fig 1. MPG by Transmission Type", ylab = "MPG")
 ```
 
 Figure 2 shows the relationship between the variable in the dataset.  This assists with selection of model variables.
 
 ```{r}
-pairs(~ ., data = mtcars, main = "Pair Relationships")
+pairs(~ ., data = mtcars, main = "Fig 2. Pair Relationships")
 #ggpairs??
 ```
 
@@ -71,14 +76,21 @@ What is the correlation between mpg and other variables and what does it mean?
 ```{r}
 # correlation??? first line is correlation with mpg
 # sort by correlation value
-sort(cor(mtcars)[1,])
+data(mtcars)
+mtcars$am = as.factor(ifelse(mtcars$am==0, "Automatic", "Manual"))
 # is the correlation valid?
 ```
 
-# Model selection
+Perform a t test where the null hypothesis is that there is no difference between automatic and manual transmissions.
 
-```{r}
+```{r, echo = FALSE}
+t.test(mtcars[mtcars$am == "Automatic",]$mpg, mtcars[mtcars$am == "Manual",]$mpg)
 ```
+
+In this case the null hypothesis should be rejected (p value less than 5%), there is a statistical difference between automatic and manual transmissions on mpg.  It would be worth while modeling the impact of transmission on mpg.
+
+
+# Model selection
 
 The strategy for model selection is....
 
@@ -88,18 +100,16 @@ Compare models...
 #what could influence mpg?
 # cyl, hp, wt, am, gear, carb
 
-fit0 <- lm(mpg ~ factor(am), data = mtcars)
-fit1 <- lm(mpg ~ factor(am) + wt, data = mtcars)
-fit2 <- lm(mpg ~ factor(am) + wt + hp, data = mtcars)
-fit3 <- lm(mpg ~ wt + hp, data = mtcars)
-fit4 <- lm(mpg ~ ., data = mtcars)
-anova(fit0, fit1, fit2)
-anova(fit2,fit3) #wt and hp have more significant impact
-anova(fit0, fit4)
+fit0 <- lm(mpg ~ ., data = mtcars)
+fit1 <- lm(mpg ~ am, data = mtcars)
+fit2 <- lm(mpg ~ am + wt, data = mtcars)
+fit3 <- lm(mpg ~ am + wt + hp, data = mtcars)
 
+anova(fit1, fit2, fit3, fit0)
+summary(fit3)
 #r squared - percentage of variance explained by the model
 
-fitstep <- step(fit4, trace=0)
+fitstep <- step(fit0, trace=0)
 summary(fitstep)
 ```
 
@@ -110,7 +120,8 @@ Residual plots highlight poor model fit
 
 ```{r}
 par(mfrow=c(2,2))
-plot(fit)
+plot(fit2)
+plot(fitstep)
 ```
 
 ```{r}
@@ -118,28 +129,16 @@ library(car)
 vif(fit4)
 ```
 
-The coefficients indicate .....
-
-
-## Confidence and prediction intervals
 Did the student quantify the uncertainty in their conclusions and/or perform an inference correctly?
 
+The coefficients indicate .....
+
 ```{r}
-newx = data.frame(x = seq(min(x), max(x), length = 100))
-p1 = data.frame(predict(fit, newdata= newx,interval = ("confidence")))
-p2 = data.frame(predict(fit, newdata = newx,interval = ("prediction")))
-p1$interval = "confidence"
-p2$interval = "prediction"
-p1$x = newx$x
-p2$x = newx$x
-dat = rbind(p1, p2)
-names(dat)[1] = "y"
-g = ggplot(dat, aes(x = x, y = y))
-g = g + geom_ribbon(aes(ymin = lwr, ymax = upr, fill = interval), alpha = 0.2)
-g = g + geom_line()
-g = g + geom_point(data = data.frame(x = x, y=y), aes(x = x, y = y), size = 4)
-g
+fit.best <- fitstep
+summary(fit.best)$coef
 ```
+
+
 
 ## Question
 
@@ -165,6 +164,8 @@ Peer Grading
 ## Other stuff
 
 ```{r}
+sort(cor(mtcars)[1,])
+
 fit = lm(mpg ~ am, data = mtcars)
 auto = mtcars[mtcars$am=="Automatic",]
 man = mtcars[mtcars$am=="Manual",]
@@ -179,7 +180,6 @@ abline(coef(fit)[1] + coef(fit)[3], coef(fit)[2], lwd = 3)
 points(auto$mpg, pch = 21, col = "black", bg = "lightblue", cex = 2)
 points(man$mpg, pch = 21, col = "black", bg = "salmon", cex = 2)
 
-library(ggplot2)
 g = ggplot(mtcars, aes(x = wt, y = mpg))
 g = g + xlab("Weight")
 g = g + ylab("MPG")
@@ -192,7 +192,7 @@ boxplot(mpg ~ am, data = mtcars, main = "Transmission Type", ylab = "MPG")
 
 #The gclus package provides options to rearrange the variables so that those with higher correlations are closer to the principal diagonal. It can also color code the cells to reflect the size of the correlations.
 # Scatterplot Matrices from the glus Package
-install.packages("gclus")
+#install.packages("gclus")
 library(gclus)
 dta <- mtcars[c(1,3,5,6)] # get data
 dta.r <- abs(cor(dta)) # get correlations
