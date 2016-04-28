@@ -99,7 +99,7 @@ In this case the null hypothesis should be rejected (p value less than 5%), ther
 
 # Model selection
 
-Multiple models will be created with mpg as the outcome and selected variables as predictors.  One model will be chosen by AIC in a stepwise algorithm.  The best fit model will be selected.
+Multiple models will be created with mpg as the outcome and selected variables as predictors, the best fit will be identified.  Another model will be chosen by AIC in a stepwise algorithm.  The best fit model will be selected out of all of them.
 
 ```{r}
 # create models with the most significantly influencing variables
@@ -119,14 +119,12 @@ Using ANOVA model 3 is identified as best
 
 ```{r}
 summary(fit3)
-#r squared - percentage of variance explained by the model
 ```
 
 Use AIC in a stepwise algorithm to identify the best model from all the available variables.
 
 ```{r}
 fit4 <- step(fit0, trace=0)
-summary(fit4)
 ```
 
 The best model includes `wt`, `qsec`, and `am`.
@@ -142,11 +140,16 @@ Not sure whether to include vif().
 ```{r}
 library(car)
 vif(fit4)
+sqrt(vif(fit4))
 ```
 
 * Residual plots and diagnostics
 
-Residual plots highlight poor model fit
+Is the model we have selected good enough?  Patterns in residual plots generally indicate some poor aspect of model fit.
+
+The residual vs fitted plot shows the points lie above and below the zero with no systematic patterns or large outlying observations.  The scale-location plot shows similar data, but the Y-axis is standardised residuals (rescaled so that they have a mean of zero and a variance of one).  The red line in the plot should be relatively flat, which it is apart from the start and end.
+
+The normal Q-Q plot indicates the residual to normal quantiles is good as they fall mostly along the line.  The residuals vs leverage plot shows the points are equally centred around zero, the red line is close to the horizontal dashed line and no points have a large Cook's distance (>0.5), which means the model is good.
 
 ```{r}
 par(mfrow=c(2,2))
