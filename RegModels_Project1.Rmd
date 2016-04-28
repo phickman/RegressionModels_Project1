@@ -44,6 +44,7 @@ Load the data and libraries to process.
 ```{r, echo=FALSE}
 library(UsingR); data(mtcars)
 library(ggplot2)
+library(GGally)
 ```
 
 
@@ -66,19 +67,25 @@ boxplot(mpg ~ am, data = mtcars, main = "Fig 1. MPG by Transmission Type", ylab 
 
 Figure 2 shows the relationship between the variable in the dataset.  This assists with selection of model variables.
 
-```{r}
+```{r, cache=TRUE}
 pairs(~ ., data = mtcars, main = "Fig 2. Pair Relationships")
-#ggpairs??
-```
 
-What is the correlation between mpg and other variables and what does it mean?
+ggpairs(
+ mtcars,
+ mapping = ggplot2::aes(color = am),
+ axisLabels = "internal",
+ upper = "blank", #list(continuous = wrap("density", alpha = 0.5), combo = "box"),
+ #lower = list(continuous = wrap("points", alpha = 0.3), combo = wrap("dot", alpha = 0.4)),
+ title = "Cars"
+)
 
-```{r}
-# correlation??? first line is correlation with mpg
-# sort by correlation value
-data(mtcars)
-mtcars$am = as.factor(ifelse(mtcars$am==0, "Automatic", "Manual"))
-# is the correlation valid?
+ggpairs(
+ mtcars,
+ mapping = ggplot2::aes(color = am),
+ upper = list(continuous = wrap("density", alpha = 0.5), combo = "box"),
+ lower = list(continuous = wrap("points", alpha = 0.3), combo = wrap("dot", alpha = 0.4)),
+ title = "Cars"
+)
 ```
 
 Perform a t test where the null hypothesis is that there is no difference between automatic and manual transmissions.
@@ -92,42 +99,61 @@ In this case the null hypothesis should be rejected (p value less than 5%), ther
 
 # Model selection
 
-The strategy for model selection is....
-
-Compare models...
+Multiple models will be created with mpg as the outcome and selected variables as predictors.  One model will be chosen by AIC in a stepwise algorithm.  The best fit model will be selected.
 
 ```{r}
-#what could influence mpg?
-# cyl, hp, wt, am, gear, carb
-
+# create models with the most significantly influencing variables
 fit0 <- lm(mpg ~ ., data = mtcars)
 fit1 <- lm(mpg ~ am, data = mtcars)
 fit2 <- lm(mpg ~ am + wt, data = mtcars)
 fit3 <- lm(mpg ~ am + wt + hp, data = mtcars)
-
-anova(fit1, fit2, fit3, fit0)
-summary(fit3)
-#r squared - percentage of variance explained by the model
-
-fitstep <- step(fit0, trace=0)
-summary(fitstep)
 ```
 
-T tests???? do they need to be normally distributed?
-
-* Residual plot and some diagnostics?
-Residual plots highlight poor model fit
+Use ANOVA to identify the best model.
 
 ```{r}
-par(mfrow=c(2,2))
-plot(fit2)
-plot(fitstep)
+anova(fit1, fit2, fit3, fit0)
 ```
+
+Using ANOVA model 3 is identified as best
+
+```{r}
+summary(fit3)
+#r squared - percentage of variance explained by the model
+```
+
+Use AIC in a stepwise algorithm to identify the best model from all the available variables.
+
+```{r}
+fit4 <- step(fit0, trace=0)
+summary(fit4)
+```
+
+The best model includes `wt`, `qsec`, and `am`.
+
+```{r}
+summary(fit4)
+```
+
+Comparing model 3 and 4, model 4 is selected due to its slightly better R squared.  R squared indicates the percentage of variance explained by the model.
+
+Not sure whether to include vif().
 
 ```{r}
 library(car)
 vif(fit4)
 ```
+
+* Residual plots and diagnostics
+
+Residual plots highlight poor model fit
+
+```{r}
+par(mfrow=c(2,2))
+plot(fit4)
+```
+
+* Conclusion
 
 Did the student quantify the uncertainty in their conclusions and/or perform an inference correctly?
 
@@ -164,7 +190,7 @@ Peer Grading
 ## Other stuff
 
 ```{r}
-sort(cor(mtcars)[1,])
+#sort(cor(mtcars)[1,])
 
 fit = lm(mpg ~ am, data = mtcars)
 auto = mtcars[mtcars$am=="Automatic",]
