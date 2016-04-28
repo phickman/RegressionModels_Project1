@@ -1,26 +1,22 @@
 ---
 output:
+  pdf_document: default
   html_document:
     keep_md: no
 ---
 ```{r global_options, include = FALSE}
-knitr::opts_chunk$set(fig.width = 12, fig.height = 8, fig.path = 'figure/',
-                      echo = TRUE, warning = FALSE, message = FALSE)
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
 ```
-# Introduction
+# Executive Summary
 
 Motor Trend, a magazine about the automobile industry, has looked at a data set of a collection of cars to explore the relationship between a set of variables and miles per gallon (MPG). The magazine is particularly interested in the following two questions:
 
 * "Is an automatic or manual transmission better for MPG"
 * "Quantify the MPG difference between automatic and manual transmissions"
 
+The analysis found the data supports the claim that cars with manual transmisison deliver better MPG than those with automatic.  The increase from automatic to manual transmission was 2.9MPG.
 
-# Executive Summary
-
-The analysis identified data that supports the claim that cars with a manual transmisison deliver more (2.9mpg) than automatic cars.generally held belief that manual cars are provide more miles per gallon (mpg).
-
-
-# The data
+# The Data
 
 The data was extracted from the 1974 Motor Trends magazine and comprises fuel consumption and 10 aspects of automobile design and performance for 32 automobiles (1973-74 models).
 
@@ -38,15 +34,12 @@ The variables of the dataset are:
 * `gear`	Number of forward gears
 * `carb`	Number of carburetors
 
-Load the data and libraries to process.
-
-```{r}
+```{r, echo=FALSE}
 library(UsingR)
 data(mtcars)
 library(ggplot2)
 library(GGally)
 ```
-
 
 # Exploratory data analysis
 
@@ -59,43 +52,15 @@ mtcars$am = as.factor(ifelse(mtcars$am==0, "Automatic", "Manual"))
 
 The plots for the exploratory data analysis can be found in the appendix.
 
-Figure 1 is a boxplot of the comparison of the mpg between manual and automatic transmission, showing that over manual has higher mpg than automatic.
-
-```{r}
-boxplot(mpg ~ am, data = mtcars, main = "Fig 1. MPG by Transmission Type", ylab = "MPG")
-```
-
-Figure 2 shows the relationship between the variable in the dataset.  This assists with selection of model variables.
-
-```{r, cache=TRUE}
-pairs(~ ., data = mtcars, main = "Fig 2. Pair Relationships")
-
-ggpairs(
- mtcars,
- mapping = ggplot2::aes(color = am),
- axisLabels = "internal",
- upper = "blank", #list(continuous = wrap("density", alpha = 0.5), combo = "box"),
- #lower = list(continuous = wrap("points", alpha = 0.3), combo = wrap("dot", alpha = 0.4)),
- title = "Cars"
-)
-
-ggpairs(
- mtcars,
- mapping = ggplot2::aes(color = am),
- upper = list(continuous = wrap("density", alpha = 0.5), combo = "box"),
- lower = list(continuous = wrap("points", alpha = 0.3), combo = wrap("dot", alpha = 0.4)),
- title = "Cars"
-)
-```
+Figure 1 is a boxplot of the comparison of the mpg between manual and automatic transmission, showing that over manual has higher mpg than automatic.  Figure 2 shows the relationship between the variable in the dataset.  This assists with selection of model variables.
 
 Perform a t test where the null hypothesis is that there is no difference between automatic and manual transmissions.
 
-```{r, echo = FALSE}
+```{r}
 t.test(mtcars[mtcars$am == "Automatic",]$mpg, mtcars[mtcars$am == "Manual",]$mpg)
 ```
 
 In this case the null hypothesis should be rejected (p value less than 5%), there is a statistical difference between automatic and manual transmissions on mpg.  It would be worth while modeling the impact of transmission on mpg.
-
 
 # Model selection
 
@@ -135,7 +100,6 @@ summary(fit4)
 
 Comparing model 3 and 4, model 4 is selected due to its slightly better R squared.  R squared indicates the percentage of variance explained by the model.
 
-
 # Residual plots and diagnostics
 
 Is the selected model good enough?  Patterns in residual plots generally indicate some poor aspect of model fit.
@@ -144,103 +108,25 @@ The residual vs fitted plot shows the points lie above and below the zero with n
 
 The normal Q-Q plot indicates the residual to normal quantiles is good as they fall mostly along the line.  The residuals vs leverage plot shows the points are equally centred around zero, the red line is close to the horizontal dashed line and no points have a large Cook's distance (>0.5), which means the model is good.
 
-```{r}
+```{r, fig.width = 12, fig.height = 8}
 par(mfrow=c(2,2))
-#plot(fit0, main="fit0")
-#plot(fit1, main="fit1")
-#plot(fit2, main="fit2")
-#plot(fit3, main="fit3")
 plot(fit4)
 ```
-
 
 # Conclusion
 
 The coefficients for model 4 indicate automatic transmission cars average 9.6 miles per gallon and manual cars delivering an additional 2.9 mpg.  The adjusted R-squared indicates a 83% fit with the variance and the model's p-value is just less than the 5% cut off.
 
+# Appendix
 
-## Question
+```{r, echo=FALSE, cache=TRUE, fig.width = 12, fig.height = 8}
+boxplot(mpg ~ am, data = mtcars, main = "Fig 1. MPG by Transmission Type", ylab = "MPG")
 
-Take the mtcars data set and write up an analysis to answer their question using regression models and exploratory data analyses.
-
-Your report must be:
-
-* Written as a PDF printout of a compiled (using knitr) R markdown document.
-* Brief. Roughly the equivalent of 2 pages or less for the main text. Supporting figures in an appendix can be included up to 5 total pages including the 2 for the main report. The appendix can only include figures.
-
-Peer Grading
-
-* Did the student interpret the coefficients correctly?
-* Did the student do some exploratory data analyses?
-* Did the student fit multiple models and detail their strategy for model selection?
-* Did the student answer the questions of interest or detail why the question(s) is (are) not answerable?
-* Did the student do a residual plot and some diagnostics?
-* Did the student quantify the uncertainty in their conclusions and/or perform an inference correctly?
-* Was the report brief (about 2 pages long) for the main body of the report and no longer than 5 with supporting appendix of figures?
-* Did the report include an executive summary?
-* Was the report done in Rmd (knitr)?
-
-## Other stuff
-
-```{r}
-#Not sure whether to include vif().
-library(car)
-vif(fit4)
-sqrt(vif(fit4))
-
-#sort(cor(mtcars)[1,])
-
-fit = lm(mpg ~ am, data = mtcars)
-auto = mtcars[mtcars$am=="Automatic",]
-man = mtcars[mtcars$am=="Manual",]
-
-plot(mtcars$wt, mtcars$mpg, type = "n", frame = FALSE)
-abline(lm(mtcars$mpg ~ mtcars$wt), lwd = 2)
-abline(h = mean(auto$mpg), lwd = 3)
-abline(h = mean(man$mpg), lwd = 3)
-fit <- lm(mpg ~ wt + am, data = mtcars)
-abline(coef(fit)[1], coef(fit)[2], lwd = 3)
-abline(coef(fit)[1] + coef(fit)[3], coef(fit)[2], lwd = 3)
-points(auto$mpg, pch = 21, col = "black", bg = "lightblue", cex = 2)
-points(man$mpg, pch = 21, col = "black", bg = "salmon", cex = 2)
-
-g = ggplot(mtcars, aes(x = wt, y = mpg))
-g = g + xlab("Weight")
-g = g + ylab("MPG")
-g = g + geom_point(data = mtcars, aes(x = wt, y = mpg, color = am), size = 4)
-g
-
-pairs(~mpg+am+wt+hp,data=mtcars, main="Simple Scatterplot Matrix")
-pairs(mtcars, panel = panel.smooth, main = "mtcars Dataset", col = 3 + (mtcars$am == "Automatic"))
-boxplot(mpg ~ am, data = mtcars, main = "Transmission Type", ylab = "MPG")
-
-#The gclus package provides options to rearrange the variables so that those with higher correlations are closer to the principal diagonal. It can also color code the cells to reflect the size of the correlations.
-# Scatterplot Matrices from the glus Package
-#install.packages("gclus")
-library(gclus)
-dta <- mtcars[c(1,3,5,6)] # get data
-dta.r <- abs(cor(dta)) # get correlations
-dta.col <- dmat.color(dta.r) # get colors
-# reorder variables so those with highest correlation
-# are closest to the diagonal
-dta.o <- order.single(dta.r)
-cpairs(dta, dta.o, panel.colors=dta.col, gap=.5,       
-       main="Variables Ordered and Colored by Correlation" )
-
-fit <- lm(mpg ~ hp, data = mtcars)
-temp <- mtcars
-temp$resid <- resid(fit)
-
-g <- ggplot(temp, aes(x = am, y = resid))
-g <- g + geom_hline(yintercept = 0, col="red")
-g <- g + geom_point(alpha = .5, cex = 5)
-g
-
-#http://data.princeton.edu/R/linearModels.html
-par(mfrow=c(2,2))
-plot(fit)
-
-plot(fitted(fit), residuals(fit), xlab = "Fitted Values", ylab = "Residuals")
-abline(h=0, lty=2)
-lines(smooth.spline(fitted(fit), residuals(fit)))
+ggpairs(
+ mtcars,
+ mapping = ggplot2::aes(color = am),
+ upper = list(continuous = wrap("density", alpha = 0.5), combo = "box"),
+ lower = list(continuous = wrap("points", alpha = 0.3), combo = wrap("dot", alpha = 0.4)),
+ title = "Fig 2. Pair Relationships"
+)
 ```
