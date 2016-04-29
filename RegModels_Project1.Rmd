@@ -14,27 +14,13 @@ Motor Trend, a magazine about the automobile industry, has looked at a data set 
 * "Is an automatic or manual transmission better for MPG"
 * "Quantify the MPG difference between automatic and manual transmissions"
 
-The analysis found the data supports the claim that cars with manual transmisison deliver better MPG than those with automatic.  The increase from automatic to manual transmission was 2.9MPG.
+The analysis found the data supports the claim that cars with manual transmisison deliver better MPG than those with automatic.  The increase from automatic to manual transmission is 2.9 MPG.
 
 # The Data
 
-The data was extracted from the 1974 Motor Trends magazine and comprises fuel consumption and 10 aspects of automobile design and performance for 32 automobiles (1973-74 models).
+The data was extracted from the 1974 Motor Trends magazine and comprises fuel consumption and 10 aspects of automobile design and performance for 32 automobiles (1973-74 models).  The list of variables can be found in the Appendix at Figure 1.
 
-The variables of the dataset are:
-
-* `mpg`   Miles/(US) gallon
-* `cyl`	  Number of cylinders
-* `disp`	Displacement (cu.in.)
-* `hp`	  Gross horsepower
-* `drat`	Rear axle ratio
-* `wt`	  Weight (1000 lbs)
-* `qsec`	1/4 mile time
-* `vs`	  V/S
-* `am`	  Transmission (0 = automatic, 1 = manual)
-* `gear`	Number of forward gears
-* `carb`	Number of carburetors
-
-```{r, echo=FALSE}
+```{r}
 library(UsingR)
 data(mtcars)
 library(ggplot2)
@@ -50,17 +36,13 @@ An understanding of the `am` variable means it should be a factor variable indic
 mtcars$am = as.factor(ifelse(mtcars$am==0, "Automatic", "Manual"))
 ```
 
-The plots for the exploratory data analysis can be found in the appendix.
+Figure 2 in the Appendix is a boxplot of the comparison of the mpg between manual and automatic transmission, showing that over manual has higher mpg than automatic.  Figure 3 shows the relationship between the variable in the dataset.  This assists with selection of model variables.
 
-Figure 1 is a boxplot of the comparison of the mpg between manual and automatic transmission, showing that over manual has higher mpg than automatic.  Figure 2 shows the relationship between the variable in the dataset.  This assists with selection of model variables.
+We perform a t-test where the null hypothesis is that there is no difference between automatic and manual transmissions.  The results in Figure 4 indicate the null hypothesis should be rejected (p value less than 5%), there is a statistical difference between automatic and manual transmissions on mpg.
 
-Perform a t test where the null hypothesis is that there is no difference between automatic and manual transmissions.
-
-```{r}
+```{r, results='hide'}
 t.test(mtcars[mtcars$am == "Automatic",]$mpg, mtcars[mtcars$am == "Manual",]$mpg)
 ```
-
-In this case the null hypothesis should be rejected (p value less than 5%), there is a statistical difference between automatic and manual transmissions on mpg.  It would be worth while modeling the impact of transmission on mpg.
 
 # Model selection
 
@@ -74,59 +56,79 @@ fit2 <- lm(mpg ~ am + wt, data = mtcars)
 fit3 <- lm(mpg ~ am + wt + hp, data = mtcars)
 ```
 
-Use ANOVA to identify the best model.
-
-```{r}
-anova(fit1, fit2, fit3, fit0)
-```
-
-Using ANOVA model 3 is identified as best
-
-```{r}
-summary(fit3)
-```
-
-Use AIC in a stepwise algorithm to identify the best model from all the available variables.
+Using ANOVA, model 3 is identified as the best fit (see Figure 5).  Model 4 is created by using AIC in a stepwise algorithm to identify the best model from all available variables.
 
 ```{r}
 fit4 <- step(fit0, trace=0)
 ```
 
-The best model includes `wt`, `qsec`, and `am`.
-
-```{r}
-summary(fit4)
-```
-
-Comparing model 3 and 4, model 4 is selected due to its slightly better R squared.  R squared indicates the percentage of variance explained by the model.
+We compare the summary of models 3 and 4 (see Figure 6 & 7) and select model 4 as best due to its slightly better R squared.  R squared indicates the percentage of variance explained by the model.
 
 # Residual plots and diagnostics
 
-Is the selected model good enough?  Patterns in residual plots generally indicate some poor aspect of model fit.
+Patterns in residual plots generally indicate some poor aspect of model fit.  Figure 8 contains the residual plots to demonstrate good model fit.  The **residual vs fitted** plot shows the points lie above and below the zero with no systematic patterns or large outlying observations.  The **scale-location** plot shows similar data, but the Y-axis is standardised residuals (rescaled so they have a mean of zero and a variance of one).  The red line in the plot should be relatively flat, which it is apart from the start and end.
 
-The residual vs fitted plot shows the points lie above and below the zero with no systematic patterns or large outlying observations.  The scale-location plot shows similar data, but the Y-axis is standardised residuals (rescaled so that they have a mean of zero and a variance of one).  The red line in the plot should be relatively flat, which it is apart from the start and end.
-
-The normal Q-Q plot indicates the residual to normal quantiles is good as they fall mostly along the line.  The residuals vs leverage plot shows the points are equally centred around zero, the red line is close to the horizontal dashed line and no points have a large Cook's distance (>0.5), which means the model is good.
-
-```{r, fig.width = 12, fig.height = 8}
-par(mfrow=c(2,2))
-plot(fit4)
-```
+The **normal Q-Q** plot indicates the residual to normal quantiles is good as they fall mostly along the line.  The **residuals vs leverage** plot shows the points are equally centred around zero, the red line is close to the horizontal dashed line and no points have a large Cook's distance (>0.5), which means the model is good.
 
 # Conclusion
 
-The coefficients for model 4 indicate automatic transmission cars average 9.6 miles per gallon and manual cars delivering an additional 2.9 mpg.  The adjusted R-squared indicates a 83% fit with the variance and the model's p-value is just less than the 5% cut off.
+The coefficients for model 4 indicate automatic transmission cars average 9.6 miles per gallon and manual cars delivering an additional 2.9 mpg.  The adjusted R-squared indicates a 83% fit with the variance and the model's p-value is just less than the 5% cut off.  See Figure 6 & 7 for more detail.
 
 # Appendix
 
+Figure 1. The variables of the dataset are:
+
+* `mpg`   Miles/(US) gallon
+* `cyl`	  Number of cylinders
+* `disp`	Displacement (cu.in.)
+* `hp`	  Gross horsepower
+* `drat`	Rear axle ratio
+* `wt`	  Weight (1000 lbs)
+* `qsec`	1/4 mile time
+* `vs`	  V/S
+* `am`	  Transmission (0 = automatic, 1 = manual)
+* `gear`	Number of forward gears
+* `carb`	Number of carburetors
+
 ```{r, echo=FALSE, cache=TRUE, fig.width = 12, fig.height = 8}
-boxplot(mpg ~ am, data = mtcars, main = "Fig 1. MPG by Transmission Type", ylab = "MPG")
+boxplot(mpg ~ am, data = mtcars, main = "Fig 2. MPG by Transmission Type", ylab = "MPG")
 
 ggpairs(
  mtcars,
  mapping = ggplot2::aes(color = am),
  upper = list(continuous = wrap("density", alpha = 0.5), combo = "box"),
  lower = list(continuous = wrap("points", alpha = 0.3), combo = wrap("dot", alpha = 0.4)),
- title = "Fig 2. Pair Relationships"
+ title = "Fig 3. Pair Relationships"
 )
+```
+
+Figure 4. T-test results
+
+```{r, echo=FALSE}
+t.test(mtcars[mtcars$am == "Automatic",]$mpg, mtcars[mtcars$am == "Manual",]$mpg)
+```
+
+Figure 5. ANOVA to identify best model (0-3)
+
+```{r, echo=FALSE}
+anova(fit1, fit2, fit3, fit0)
+```
+
+Figure 6. The best model identified by ANOVA
+
+```{r, echo=FALSE}
+summary(fit3)
+```
+
+Figure 7. The best model identified by AIC in a stepwise algorithm
+
+```{r, echo=FALSE}
+summary(fit4)
+```
+
+Figure 8. Residual plots
+
+```{r, echo=FALSE, fig.width = 12, fig.height = 8}
+par(mfrow=c(2,2))
+plot(fit4)
 ```
