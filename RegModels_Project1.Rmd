@@ -9,7 +9,7 @@ knitr::opts_chunk$set(warning = FALSE, message = FALSE)
 ```
 # Executive Summary
 
-Motor Trend, a magazine about the automobile industry, has looked at a data set of a collection of cars to explore the relationship between a set of variables and miles per gallon (MPG). The magazine is particularly interested in the following two questions:
+Motor Trend, a magazine about the automobile industry, has analysed a data set of a collection of cars to explore the relationship between miles per gallon (MPG) and other variables. The magazine is particularly interested in the following two questions:
 
 * "Is an automatic or manual transmission better for MPG"
 * "Quantify the MPG difference between automatic and manual transmissions"
@@ -36,7 +36,7 @@ An understanding of the `am` variable means it should be a factor variable indic
 mtcars$am = as.factor(ifelse(mtcars$am==0, "Automatic", "Manual"))
 ```
 
-Figure 2 in the Appendix is a boxplot of the comparison of the mpg between manual and automatic transmission, showing that over manual has higher mpg than automatic.  Figure 3 shows the relationship between the variable in the dataset.  This assists with selection of model variables.
+Figure 2 in the Appendix is a boxplot of the comparison of the mpg between manual and automatic transmission, showing that overall manual has higher mpg than automatic.  Figure 3 shows the relationship between all the variables in the dataset.  This assists with selection of model variables.
 
 We perform a t-test where the null hypothesis is that there is no difference between automatic and manual transmissions.  The results in Figure 4 indicate the null hypothesis should be rejected (p value less than 5%), there is a statistical difference between automatic and manual transmissions on mpg.
 
@@ -72,33 +72,33 @@ The **normal Q-Q** plot indicates the residual to normal quantiles is good as th
 
 # Conclusion
 
-The coefficients for model 4 indicate automatic transmission cars average 9.6 miles per gallon and manual cars delivering an additional 2.9 mpg.  The adjusted R-squared indicates a 83% fit with the variance and the model's p-value is just less than the 5% cut off.  See Figure 6 & 7 for more detail.
+The coefficients for model 4 (Figure 7) indicate automatic transmission cars average 9.6 miles per gallon and manual cars deliver an additional 2.9 mpg.  The adjusted R-squared indicates an 83% explanation of the variance and the model's p-value is just less than the 5% cut off.  See Figure 6 & 7 for more detail.
 
 # Appendix
 
 Figure 1. The variables of the dataset are:
 
-* `mpg`   Miles/(US) gallon
-* `cyl`	  Number of cylinders
-* `disp`	Displacement (cu.in.)
-* `hp`	  Gross horsepower
-* `drat`	Rear axle ratio
-* `wt`	  Weight (1000 lbs)
-* `qsec`	1/4 mile time
-* `vs`	  V/S
-* `am`	  Transmission (0 = automatic, 1 = manual)
-* `gear`	Number of forward gears
-* `carb`	Number of carburetors
+* `mpg` - Miles/(US) gallon
+* `cyl` - Number of cylinders
+* `disp` - Displacement (cu.in.)
+* `hp` - Gross horsepower
+* `drat` - Rear axle ratio
+* `wt` - Weight (1000 lbs)
+* `qsec` - 1/4 mile time
+* `vs` - V/S
+* `am` - Transmission (0 = automatic, 1 = manual)
+* `gear` - Number of forward gears
+* `carb` - Number of carburetors
 
 ```{r, echo=FALSE, cache=TRUE, fig.width = 12, fig.height = 8}
-boxplot(mpg ~ am, data = mtcars, main = "Fig 2. MPG by Transmission Type", ylab = "MPG")
+boxplot(mpg ~ am, data = mtcars, main = "Figure 2. MPG by Transmission Type", ylab = "MPG")
 
 ggpairs(
  mtcars,
  mapping = ggplot2::aes(color = am),
  upper = list(continuous = wrap("density", alpha = 0.5), combo = "box"),
  lower = list(continuous = wrap("points", alpha = 0.3), combo = wrap("dot", alpha = 0.4)),
- title = "Fig 3. Pair Relationships"
+ title = "Figure 3. Pair Relationships"
 )
 ```
 
